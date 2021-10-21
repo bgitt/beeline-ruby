@@ -2057,14 +2057,10 @@ if defined?(Honeycomb::Redis)
           Redis.new(
             driver: driver, cluster: cluster, replica: true,
           ).tap do |redis|
-            # https://github.com/redis/redis-rb/issues/1017
             # establishes connections to all nodes in the cluster,
             # otherwise extra READONLY commands are executed on replicas
-            if VERSION > Gem::Version.new("4.1.1")
-              redis.auth
-            else
-              redis.auth("")
-            end
+            # https://github.com/redis/redis-rb/issues/1017
+            redis.auth("password")
             libhoney_client.events.clear
           end
         end
