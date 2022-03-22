@@ -12,7 +12,7 @@ module Honeycomb
                   :debug
 
     attr_writer :service_name, :client, :host_name
-    attr_reader :error_backtrace_limit
+    attr_reader :error_backtrace_limit, :custom_field_prefix
 
     def initialize
       @write_key = ENV["HONEYCOMB_WRITEKEY"]
@@ -21,6 +21,7 @@ module Honeycomb
       @debug = ENV.key?("HONEYCOMB_DEBUG")
       @error_backtrace_limit = 0
       @client = nil
+      @custom_field_prefix = 'app'
     end
 
     def service_name
@@ -41,6 +42,10 @@ module Honeycomb
         else
           Libhoney::Client.new(**libhoney_client_options)
         end
+    end
+
+    def custom_field_prefix=(val)
+      @custom_field_prefix = val # TODO: make this safe
     end
 
     def after_initialize(client)

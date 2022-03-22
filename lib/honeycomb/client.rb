@@ -39,6 +39,7 @@ module Honeycomb
         propagation_hook: configuration.http_trace_propagation_hook,
       }
       @error_backtrace_limit = configuration.error_backtrace_limit.to_i
+      @custom_field_prefix = configuration.custom_field_prefix
 
       configuration.after_initialize(self)
 
@@ -72,13 +73,13 @@ module Honeycomb
     def add_field(key, value)
       return if context.current_span.nil?
 
-      context.current_span.add_field("app.#{key}", value)
+      context.current_span.add_field(prefix_key(key), value)
     end
 
     def add_field_to_trace(key, value)
       return if context.current_span.nil?
 
-      context.current_span.trace.add_field("app.#{key}", value)
+      context.current_span.trace.add_field(prefix_key(key), value)
     end
 
     def with_field(key)
@@ -91,7 +92,7 @@ module Honeycomb
 
     private
 
-    attr_reader :context, :error_backtrace_limit
+    attr_reader :context, :error_backtrace_limit, :custom_field_prefix
 
     def new_span_for_context(serialized_trace:)
       if context.current_trace.nil?
@@ -124,6 +125,10 @@ module Honeycomb
       )
       span.add_field("error_backtrace_limit", error_backtrace_limit)
       span.add_field("error_backtrace_total_length", exception.backtrace.length)
+    end
+
+    def prefix_key(key)
+      custom_field_prefix.empty? ? key : "#{custom_field_prefix}.#{key}"
     end
   end
 end
